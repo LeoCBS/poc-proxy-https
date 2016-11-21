@@ -38,15 +38,19 @@ func main() {
 	proxyURL := url.URL{
 		Scheme: proxyScheme,
 		Host:   proxyHost}
+
 	transport := &http.Transport{
 		Proxy:           http.ProxyURL(&proxyURL),
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: transport}
 
-	auth := fmt.Sprintf("%s:%s", user, password)
-	basic := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
-	req.Header.Add("Proxy-Authorization", basic)
+	if user != "" && password != "" {
+		fmt.Println("Setting basic auth")
+		auth := fmt.Sprintf("%s:%s", user, password)
+		basic := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
+		req.Header.Add("Proxy-Authorization", basic)
+	}
 
 	fmt.Println("making request")
 	resp, err := client.Do(req)
