@@ -27,22 +27,23 @@ func main() {
 	flag.Parse()
 
 	req, _ := http.NewRequest("GET", dest, nil)
-	//req.Header.Set("Host", "www.google.com.br")
+	req.Header.Set("Host", "www.google.com.br")
 
 	proxyURL := url.URL{
-		Scheme: "https",
+		Scheme: "http",
 		Host:   proxy}
+
+	auth := fmt.Sprintf("%s:%s", user, password)
+	basic := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
+	req.Header.Add("Proxy-Authorization", basic)
 
 	transport := &http.Transport{
 		Proxy:           http.ProxyURL(&proxyURL),
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
+	//transport.ProxyConnectHeader = req.Header
 	client := &http.Client{Transport: transport}
 	req.RequestURI = ""
-
-	auth := fmt.Sprintf("%s:%s", user, password)
-	basic := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
-	req.Header.Add("Proxy-Authorization", basic)
 
 	resp, err := client.Do(req)
 	if err != nil {
