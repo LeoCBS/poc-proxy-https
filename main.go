@@ -35,7 +35,7 @@ func main() {
 
 	transport := &http.Transport{
 		Proxy:           http.ProxyURL(&proxyURL),
-		TLSClientConfig: &tls.Config{},
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: transport}
 	req.RequestURI = ""
@@ -47,6 +47,7 @@ func main() {
 	resp, err := client.Do(req)
 	if err != nil {
 		fmt.Printf("erro: %s", err)
+		return
 	}
 	fmt.Printf("code: %s", resp.StatusCode)
 	htmlData, err := ioutil.ReadAll(resp.Body)
