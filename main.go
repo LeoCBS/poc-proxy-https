@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 )
 
 var (
@@ -20,40 +21,51 @@ var (
 
 func main() {
 
-	flag.StringVar(&proxy, "proxy", "", "provide proxy URL: IP:PORT")
+	flag.StringVar(&proxy, "proxy", "", "provide proxy URL: scheme://ip:port")
 	flag.StringVar(&user, "user", "", "provide proxy user")
 	flag.StringVar(&password, "password", "", "provide proxy password")
 	flag.StringVar(&dest, "dest", "", "provide URL to access")
 	flag.Parse()
 
-	req, _ := http.NewRequest("GET", dest, nil)
-	//req.Header.Set("Host", "www.google.com.br")
+	parsedProxy := strings.Split(proxy, "://")
+	proxyScheme := parsedProxy[0]
+	proxyHost := parsedProxy[1]
 
+	fmt.Printf("scheme: %s\n", proxyScheme)
+	fmt.Printf("host: %s\n", proxyHost)
+
+	req, _ := http.NewRequest("GET", dest, nil)
 	proxyURL := url.URL{
-		Scheme: "https",
-		Host:   proxy}
+		Scheme: proxyScheme,
+		Host:   proxyHost}
 
 	transport := &http.Transport{
 		Proxy:           http.ProxyURL(&proxyURL),
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
 	client := &http.Client{Transport: transport}
-	req.RequestURI = ""
 
-	auth := fmt.Sprintf("%s:%s", user, password)
-	basic := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
-	req.Header.Add("Proxy-Authorization", basic)
+	if user != "" && password != "" {
+		fmt.Println("Setting basic auth")
+		auth := fmt.Sprintf("%s:%s", user, password)
+		basic := "Basic " + base64.StdEncoding.EncodeToString([]byte(auth))
+		req.Header.Add("Proxy-Authorization", basic)
+	}
 
+	fmt.Println("making request")
 	resp, err := client.Do(req)
+	fmt.Println("done")
+
 	if err != nil {
-		fmt.Printf("erro: %s", err)
+		fmt.Printf("error: %s\n", err)
 		return
 	}
-	fmt.Printf("code: %s", resp.StatusCode)
+
+	fmt.Printf("code: %s\n", resp.StatusCode)
 	htmlData, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		fmt.Printf("Error: %s reading response\n", err)
+		return
 	}
 
 	fmt.Println(os.Stdout, string(htmlData))
