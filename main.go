@@ -41,7 +41,7 @@ func main() {
 		Proxy:           http.ProxyURL(&proxyURL),
 		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 	}
-	//transport.ProxyConnectHeader = req.Header
+	transport.ProxyConnectHeader = req.Header
 	client := &http.Client{Transport: transport}
 	req.RequestURI = ""
 
