@@ -16,11 +16,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 #install go 1.4 to compile lest go version
 RUN wget --no-check-certificate https://storage.googleapis.com/golang/go1.4.1.linux-amd64.tar.gz
 RUN tar -xvf go1.4.1.linux-amd64.tar.gz
-RUN mv go /usr/local
+RUN mv go /tmp/go
 
-ENV PATH $PATH:/usr/local/go/bin
+#NV PATH $PATH:/usr/local/go/bin
 
-RUN chmod -R 777 /usr/local/go
+#UN chmod -R 777 /usr/local/go
 
 #installing golang from git/master
 WORKDIR /app
@@ -33,14 +33,18 @@ COPY ./go /app/go
 
 WORKDIR /app/go/src
 
-ENV GOROOT_BOOTSTRAP /usr/local/go
+ENV GOROOT_BOOTSTRAP /tmp/go
 
 RUN ./all.bash
 
-RUN rm -rf /usr/local/go
-
 RUN cp -rf /app/go /usr/local/go
 
-COPY ./main.go /app/main.go
+ENV PATH $PATH:/usr/local/go/bin:/go/bin
 
-WORKDIR /app
+RUN chmod -R 777 /usr/local/go
+
+RUN mkdir /go
+
+ENV GOPATH /go
+
+WORKDIR /go
