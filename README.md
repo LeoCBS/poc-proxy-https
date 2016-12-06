@@ -18,4 +18,4 @@ See Dockerfile for more information.
 
 ## run
     
-    docker run --rm leocbs/golang-devel go run main.go --proxy IP:PORT --user USER --password PASSWORD --dest https://www.google.com.br
+    docker run --rm -v `pwd`/main.go:/go/main.go leocbs/golang-devel go run main.go --proxy IP:PORT --user USER --password PASSWORD --dest https://www.google.com.br
